@@ -1,0 +1,87 @@
+{
+	"info": {
+		"_postman_id": "fefc913b-9b28-475d-bcb9-2c3606422552",
+		"name": "test product Category",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "42715712"
+	},
+	"item": [
+		{
+			"name": "add product",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\":\"Nike T'xhirt\",\r\n    \"price\":1299,\r\n    \"category\":\"6888596c2d096c3b13286ae7\",\r\n    \"subCategory\":\"\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:4001/admin/add-product"
+			},
+			"response": []
+		},
+		{
+			"name": "add category",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "get Product by category",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "get all users",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "create role",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": "http://localhost:4001/api/admin/create-role"
+			},
+			"response": []
+		},
+		{
+			"name": "login",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "add user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\":\"sudipto\",\r\n    \"email\":\"sudiptosarkar833@gmail.com\",\r\n    \"role\":\"688248584f72149b36dde0b1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:4001/api/admin/add-user"
+			},
+			"response": []
+		}
+	]
+}

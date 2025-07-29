@@ -10,7 +10,7 @@ router.post('/create-role',authCheck, AdminController.createRole);
 router.post('/add-category',authCheck,AdminCheck,AdminController.addCategory)
 router.post('/add-product',authCheck,AdminCheck, AdminController.addProduct);
 router.get('/get-allProducts-by-category', AdminController.getAllProductsCountByCategoryAndSubCategory);
-router.get('/get-all-users', AdminController.getAllUsers);
+router.get('/get-all-users',authCheck,AdminCheck, AdminController.getAllUsers);
 
 
 
