@@ -240,7 +240,7 @@ class AdminController {
                 { $unwind: "$categoryInfo" },
                 {
                     $lookup: {
-                        from: "categories", // or 'subcategories' if you have a separate collection
+                        from: "categories",
                         localField: "_id.subCategory",
                         foreignField: "_id",
                         as: "subCategoryInfo"
