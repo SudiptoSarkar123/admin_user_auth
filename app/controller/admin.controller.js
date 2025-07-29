@@ -4,6 +4,7 @@ const User = require('../model/user.model');
 const Role = require('../model/roles.model');
 const generateRandomPassword = require('../helper/autoPassword');
 const { sendMail } = require('../helper/sendMail');
+const bcrypt = require('bcryptjs');
 
 const jwt = require('jsonwebtoken');
 class AdminController {
@@ -70,6 +71,48 @@ class AdminController {
 
         } catch (error) {
             console.error('Error adding user:', error);
+            return res.status(500).json({
+                status: false,
+                message: error.message || 'Internal server error'
+            });
+        }
+    }
+
+    async login(req, res) {
+        try {
+            const { email, password } = req.body;
+
+            if (!email || !password) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'Email and password are required'
+                });
+            }
+
+            const user = await User.findOne({ email });
+
+            if (!user) {
+                return res.status(401).json({
+                    status: false,
+                    message: 'Invalid email or password'
+                });
+            }
+            const isPasswordMatch = await bcrypt.compare(password, user.password);
+            if (!isPasswordMatch) {
+                return res.status(401).json({
+                    status: false,
+                    message: 'Invalid email or password'
+                });
+            }
+            const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+            return res.status(200).json({
+                status: true,
+                message: 'Login successful',
+                token
+            });
+
+        } catch (error) {
+            console.log(error)
             return res.status(500).json({
                 status: false,
                 message: error.message || 'Internal server error'
@@ -145,16 +188,18 @@ class AdminController {
 
     async addProduct(req, res) {
         try {
+            console.log(req.body)
             const authCheck = require('../middleware/authCheck');
-            const { name, description, price, category } = req.body;
+            const { name, description, price, category  } = req.body;
             if (!name || !price || !category) {
                 return res.status(400).json({
                     message: "All fealds are required.."
                 })
             }
+           
 
             const newProduct = new Product({
-                name, description, price, category
+                name, description, price, category , subCategory: req.body.subCategory || null
             });
 
             await newProduct.save();
@@ -171,34 +216,99 @@ class AdminController {
             })
         }
     }
-    async getAllProductsByCategory(req, res) {
+    async getAllProductsCountByCategoryAndSubCategory(req, res) {
         try {
-            const products = await Product.aggregate([
+            const result = await Product.aggregate([
+                {
+                    $group: {
+                        _id: {
+                            category: "$category",
+                            subCategory: "$subCategory"
+                        },
+                        productCount: { $sum: 1 },
+                        products: { $push: "$$ROOT" }
+                    }
+                },
                 {
                     $lookup: {
-                        from: 'categories',
-                        localField: "category",
+                        from: "categories",
+                        localField: "_id.category",
                         foreignField: "_id",
                         as: "categoryInfo"
                     }
                 },
                 { $unwind: "$categoryInfo" },
                 {
-                    $group: {
-                        _id: "$categoryInfo.name",
-                        products: { $push: '$$ROOT' }
+                    $lookup: {
+                        from: "categories", // or 'subcategories' if you have a separate collection
+                        localField: "_id.subCategory",
+                        foreignField: "_id",
+                        as: "subCategoryInfo"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$subCategoryInfo",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        category: "$categoryInfo.name",
+                        subCategory: "$subCategoryInfo.name",
+                        productCount: 1,
+                        products: 1
                     }
                 }
-            ])
+            ]);
             return res.status(200).json({
-                data: products,
-                message: "Products grouped by category"
-            })
+                message: "Product count by category and subcategory",
+                data: result
+            });
         } catch (error) {
             console.log(error);
             return res.status(500).json({
                 message: error.message
             });
+        }
+    }
+
+    async getAllUsers(req,res){
+        try {
+            const allUsers = await User.aggregate([
+              {
+                $lookup:{
+                    from:'roles',
+                    localField:'role',
+                    foreignField:'_id',
+                    as:'roleInfo'
+                }
+              }  ,
+                {
+                    $unwind: '$roleInfo'
+                },
+                {
+                    $match:{
+                        'roleInfo.roleName':'User'
+                    }
+                },
+                {
+                    $project:{
+                        name:1,
+                        role:'$roleInfo.roleName'
+                    }
+                }
+            ])
+            return res.status(200).json({
+                message:'All users fetched succesfully',
+                data:allUsers
+            })
+        } catch (error) {
+            console.log(error)
+            return res.status(400).json({
+                message:error.message
+            })
         }
     }
 }

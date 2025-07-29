@@ -14,8 +14,10 @@ const User = require('./app/model/user.model')
 
 
 const adminRouter = require('./app/router/admin.route')
+const userRouter = require('./app/router/user.route')
 
-app.use('/admin', adminRouter)
+app.use('/api/admin', adminRouter)
+app.use('/api/user', userRouter)
 
 app.use('/upload', express.static(path.join(__dirname, 'upload')));
 
